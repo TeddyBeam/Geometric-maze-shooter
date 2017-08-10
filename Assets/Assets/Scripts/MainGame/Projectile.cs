@@ -21,7 +21,7 @@ namespace MainGame
             Collider[] initialCollisions = Physics.OverlapSphere(transform.position, .1f, collisionMask);
             if (initialCollisions.Length > 0)
             {
-                OnHitObject(initialCollisions[0]);
+                OnHitObject(initialCollisions[0], transform.position);
             }
         }
 
@@ -39,18 +39,13 @@ namespace MainGame
 
             if (Physics.Raycast(ray, out hit, moveDistance + skinWidth, collisionMask, QueryTriggerInteraction.Collide))
             {
-                OnHitObject(hit);
+                OnHitObject(hit.collider, hit.point);
             }
         }
 
-        private void OnHitObject(RaycastHit hit)
+        private void OnHitObject(Collider collider, Vector3 hitPoint)
         {
-            base.CallPhysicContact(hit.collider.gameObject);
-        }
-
-        private void OnHitObject(Collider collider)
-        {
-            base.CallPhysicContact(collider.gameObject);
+            base.Attack(collider.gameObject, hitPoint, transform.forward);
         }
 
         protected override void OnPhysicAttacking()

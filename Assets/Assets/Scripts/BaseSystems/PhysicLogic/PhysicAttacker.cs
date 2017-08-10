@@ -13,14 +13,27 @@ namespace BaseSystems.PhysicLogic
         [SerializeField]
         private T physicParam = default(T);
 
-        protected void CallPhysicContact(GameObject victimObject)
+        protected void Attack(GameObject victimObject, Vector3 hitPoint = default(Vector3), Vector3 attackDirection = default(Vector3))
         {
-            IEnumerable<IPhysicVictim<T>> victimPhysicInterfaces = victimObject.GetComponents<IPhysicVictim<T>>();
+            IEnumerable<IAttackable<T>> victimPhysicInterfaces = victimObject.GetComponents<IAttackable<T>>();
             if (victimPhysicInterfaces != null)
             {
-                foreach (IPhysicVictim<T> physicInterface in victimPhysicInterfaces)
+                foreach (IAttackable<T> physicInterface in victimPhysicInterfaces)
                 {
-                    physicInterface.OnPhysicAttacked(physicParam);
+                    physicInterface.OnBeingAttacked(physicParam, hitPoint, attackDirection);
+                }
+                OnPhysicAttacking();
+            }
+        }
+
+        protected void Hit(GameObject victimObject)
+        {
+            IEnumerable<IAttackable<T>> victimPhysicInterfaces = victimObject.GetComponents<IAttackable<T>>();
+            if (victimPhysicInterfaces != null)
+            {
+                foreach (IAttackable<T> physicInterface in victimPhysicInterfaces)
+                {
+                    physicInterface.OnBeingAttacked(physicParam);
                 }
                 OnPhysicAttacking();
             }

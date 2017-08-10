@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BaseSystems.Observer;
 
 namespace MainGame
 {
@@ -50,6 +51,12 @@ namespace MainGame
             {
                 gunController.Shoot();
             }
+        }
+
+        protected override void Die()
+        {
+            this.PostEvent(ObserverEventID.OnGameOver);
+            base.Die();
         }
     }
 }

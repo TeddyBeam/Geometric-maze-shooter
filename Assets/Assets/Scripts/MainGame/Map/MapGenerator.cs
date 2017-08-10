@@ -22,6 +22,9 @@ namespace MainGame
         [SerializeField, Positive]
         private float tileSize = 1f;
 
+        [SerializeField]
+        private bool setObstacleColor = false;
+
         [SerializeField, Reorderable, Space(10)]
         private MapList maps;
 
@@ -36,7 +39,7 @@ namespace MainGame
         #endregion
 
         #region Mono behaviours
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             GenerateMap();
         }
@@ -48,6 +51,22 @@ namespace MainGame
         #endregion
 
         #region Generate map
+        [InspectorButton]
+        public void GenerateMap()
+        {
+            /// Set the current map index
+            if (currentMapIndex < maps.Length)
+            {
+                currentMap = maps[currentMapIndex];
+                GenerateMap(currentMap.mapSize);
+            }
+            else
+            {
+                Debug.LogError("currentMapIndex is out of range.");
+                return;
+            }
+        }
+
         public void GenerateMap(IntVector2 mapSize)
         {
             #region Debug (Reactive generate)
@@ -107,11 +126,11 @@ namespace MainGame
             for (int i = 0, currentObstacleCount = 0; i < obstacleCount; i++)
             {
                 IntVector2 randomCoord = GetRandomCoord();
-
+                    
                 obstacleMap[randomCoord.x, randomCoord.y] = true;
                 currentObstacleCount++;
 
-                if (randomCoord != currentMap.mapCentre && IsMapFullyAccessible(obstacleMap, currentObstacleCount))
+                if (randomCoord != currentMap.mapCentre  && IsMapFullyAccessible(obstacleMap, currentObstacleCount))
                 {
                     float randomHeight = Random.Range(currentMap.obstacleHeightRange.x, currentMap.obstacleHeightRange.y);
                     Vector3 obstacleSize = new Vector3((1 - currentMap.outlinePercent) * tileSize, randomHeight, (1 - currentMap.outlinePercent) * tileSize);
@@ -121,12 +140,15 @@ namespace MainGame
                     newObstacle.localScale = obstacleSize;
                     allOpenCoords.Remove(randomCoord);
 
-                    /// Set color
-                    Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
-                    Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
-                    float colourPercent = randomCoord.y / (float)currentMap.mapSize.y;
-                    obstacleMaterial.color = Color.Lerp(currentMap.foregroundColor, currentMap.backgroundColor, colourPercent);
-                    obstacleRenderer.sharedMaterial = obstacleMaterial;
+                    /// Set obstacle's color
+                    if (setObstacleColor)
+                    {
+                        Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
+                        Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
+                        float colourPercent = randomCoord.y / (float)currentMap.mapSize.y;
+                        obstacleMaterial.color = Color.Lerp(currentMap.foregroundColor, currentMap.backgroundColor, colourPercent);
+                        obstacleRenderer.sharedMaterial = obstacleMaterial;
+                    }
                     #region Debug (Reactive generate)
 #if UNITY_EDITOR
                     newObstacle.parent = mapHolder;
@@ -148,31 +170,34 @@ namespace MainGame
 
             Debug.Log("Map generated successfully.");
         }
-
-        [InspectorButton]
-        public void GenerateMap()
-        {
-            /// Set the current map index
-            if (currentMapIndex < maps.Length)
-            {
-                currentMap = maps[currentMapIndex];
-            }
-            else
-            {
-                Debug.LogError("currentMapIndex is out of range.");
-                return;
-            }
-
-            GenerateMap(currentMap.mapSize);
-        }
         #endregion
 
         #region Map generate utilities
         public Transform GetRandomOpenTile()
         {
-            IntVector2 randomCoord = openTilesCoord.Dequeue();
-            openTilesCoord.Enqueue(randomCoord);
-            return tilesMap[randomCoord.x, randomCoord.y];
+            if (openTilesCoord != null)
+            {
+                IntVector2 randomCoord = openTilesCoord.Dequeue();
+                openTilesCoord.Enqueue(randomCoord);
+                return tilesMap[randomCoord.x, randomCoord.y];
+            }
+            else
+            {
+                Debug.LogError("Null TilesCoord");
+                return null;
+            }
+        }
+
+        public Transform GetTileFromPosition(Vector3 position)
+        {
+            int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
+            int y = Mathf.RoundToInt(position.z / tileSize + (currentMap.mapSize.x - 1) / 2f);
+
+            /// Make sure x & y are contained within the tiles map.
+            x = Mathf.Clamp(x, 0, tilesMap.GetLength(0) - 1);
+            y = Mathf.Clamp(y, 0, tilesMap.GetLength(1) - 1);
+
+            return tilesMap[x, y];
         }
 
         private IntVector2 GetRandomCoord()

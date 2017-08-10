@@ -10,13 +10,8 @@
         #region Gameplay events
         OnGameStart,
         OnGamePause,
-        OnPlayerDied,
+        OnPlayerCampingDetected,
         OnGameOver,
-
-        /// <summary>
-        /// Receive money after destroy an enemy or collected a money item.
-        /// </summary>
-        OnMoneyReceived,
         #endregion
 
         #region Managers' events
@@ -45,7 +40,5 @@
         OnShowLeaderBoardRequest,
         OnHighestScoreChanged,
         #endregion
-
-        OnEnemyDie,
     }
 }

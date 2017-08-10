@@ -20,6 +20,10 @@ namespace MainGame
             {
                 EquipGun(defaultGun);
             }
+            else
+            {
+                Debug.Log("Null defaultGun");
+            }
         }
 
         public void EquipGun(Gun newGun)
@@ -36,6 +40,10 @@ namespace MainGame
             if (equippedGun != null)
             {
                 equippedGun.Shoot();
+            }
+            else
+            {
+                Debug.Log("Null equippedGun");
             }
         }
     }

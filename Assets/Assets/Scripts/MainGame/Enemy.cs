@@ -12,6 +12,9 @@ namespace MainGame
         [SerializeField, TagSelector]
         private string playerTag = "Player";
 
+        [SerializeField]
+        private GameObject deathEffect;
+
         [SerializeField, Range(1, 10)]
         private int attackDamage = 1;
 
@@ -88,12 +91,6 @@ namespace MainGame
         #endregion
 
         #region Behaviours
-        private void OnTargetDeath()
-        {
-            hasTarget = false;
-            currentState = State.Idle;
-        }
-
         private IEnumerator Attack()
         {
             currentState = State.Attacking;
@@ -114,7 +111,7 @@ namespace MainGame
                 if(percent > 0.5f && !hasAppliedDamage)
                 {
                     hasAppliedDamage = true;
-                    livingTarget.OnPhysicAttacked(attackDamage);
+                    livingTarget.OnBeingAttacked(attackDamage);
                 }
 
                 /// Do an attack 
@@ -146,6 +143,27 @@ namespace MainGame
                 }
                 yield return new WaitForSeconds(pathRefeshRate);
             }
+        }
+
+        protected override void Die()
+        {
+
+            base.Die();
+        }
+
+        private void OnTargetDeath()
+        {
+            hasTarget = false;
+            currentState = State.Idle;
+        }
+
+        public override void OnBeingAttacked(int damage, Vector3 hitPoint = default(Vector3), Vector3 hitDirection = default(Vector3))
+        {
+            if(damage > currentHealth)
+            {
+                Instantiate(deathEffect, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection));
+            }
+            base.OnBeingAttacked(damage, hitPoint, hitDirection);
         }
         #endregion
     }

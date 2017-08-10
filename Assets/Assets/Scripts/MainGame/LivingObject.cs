@@ -6,7 +6,7 @@ using System;
 
 namespace MainGame
 {
-    public class LivingObject : MonoBehaviour, IPhysicVictim<int>
+    public class LivingObject : MonoBehaviour, IAttackable<int>
     {
         [SerializeField, Range(1, 100)]
         private int startingHealth = 10;
@@ -21,10 +21,10 @@ namespace MainGame
             currentHealth = startingHealth;
         }
 
-        public virtual void OnPhysicAttacked(int damage)
+        public virtual void OnBeingAttacked(int damage, Vector3 hitPoint = default(Vector3), Vector3 hitDirection = default(Vector3))
         {
             currentHealth -= damage;
-            if(currentHealth <= 0 && !isDead)
+            if (currentHealth <= 0 && !isDead)
             {
                 Die();
             }

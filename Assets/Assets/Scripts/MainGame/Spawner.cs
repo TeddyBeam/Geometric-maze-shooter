@@ -33,44 +33,65 @@ namespace MainGame
         private float spawnDelay = 1f, tileFlashSpeed = 4f;
 
         private WaveConfig currentWave;
+        private Action<object> OnPlayerCampingDetectedHandler;
         private int currentWaveNumber = 0;
 
         private int enemiesRemainingToSpawn = 0;
         private int enemiesRemainingAlive = 0;
-        private float nextSpawnTime = 1f;
 
         protected virtual void Start()
         {
+            // Listen to OnPlayerCampingDetected from CampingPunisher.
+            OnPlayerCampingDetectedHandler = (playerPosition) => OnPlayerCampingDetected((Vector3)playerPosition);
+            this.RegisterListener(ObserverEventID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
+
             NextWave();
+            StartCoroutine(NormalSpawn());
         }
 
-        protected virtual void Update()
+        protected virtual void OnDestroy()
         {
-            if (enemiesRemainingToSpawn > 0 && Time.time > nextSpawnTime)
+            this.RemoveListener(ObserverEventID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
+        }
+
+        private IEnumerator NormalSpawn()
+        {
+            while (true)
             {
-                enemiesRemainingToSpawn--;
-                nextSpawnTime = Time.time + currentWave.timeBetweenSpawns;
-                StartCoroutine(SpawnEnemy());
+                if (enemiesRemainingToSpawn > 0)
+                {
+                    Transform spawnTile = mapGenerator.GetRandomOpenTile();
+                    StartCoroutine(SpawnEnemy(spawnTile));
+
+                    yield return new WaitForSeconds(currentWave.timeBetweenSpawns);
+                }
+                yield return new WaitForFixedUpdate();
             }
         }
 
-        private IEnumerator SpawnEnemy()
+        private void OnPlayerCampingDetected(Vector3 playerPosition)
         {
-            Transform randomTile = mapGenerator.GetRandomOpenTile();
-            Material tileMat = randomTile.GetComponent<Renderer>().material;
+            Transform spawnTile = mapGenerator.GetTileFromPosition(playerPosition);
+            Debug.Log("Camping extra enemy spawned.");
+            StartCoroutine(SpawnEnemy(spawnTile));
+        }
+
+        private IEnumerator SpawnEnemy(Transform spawnTile)
+        {
+            enemiesRemainingToSpawn--;
+            Material tileMat = spawnTile.GetComponent<Renderer>().material;
             Color initialColour = tileMat.color;
             Color flashColour = Color.red;
             float spawnTimer = 0;
-            while(spawnTimer < spawnDelay)
+            while (spawnTimer < spawnDelay)
             {
                 tileMat.color = Color.Lerp(initialColour, flashColour, Mathf.PingPong(spawnTimer * tileFlashSpeed, 1));
                 spawnTimer += Time.deltaTime;
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
 
-            Enemy spawnedEnemy = Instantiate(enemy, randomTile.position + Vector3.up, Quaternion.identity) as Enemy;
+            Enemy spawnedEnemy = Instantiate(enemy, spawnTile.position + Vector3.up, Quaternion.identity) as Enemy;
             spawnedEnemy.OnDeath += OnEnemyDeath;
-
         }
 
         private void OnEnemyDeath()
