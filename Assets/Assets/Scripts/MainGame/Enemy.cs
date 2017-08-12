@@ -6,14 +6,15 @@ using Extension.Attributes;
 
 namespace MainGame
 {
+    [RequireComponent(typeof(NavMeshAgent))]
     public class Enemy : LivingObject
     {
         #region Init
         [SerializeField, TagSelector]
-        private string playerTag = "Player";
+        private string targetTag = "Player";
 
-        [SerializeField]
-        private GameObject deathEffect;
+        [SerializeField, Positive]
+        private float moveSpeed = 3.5f;
 
         [SerializeField, Range(1, 10)]
         private int attackDamage = 1;
@@ -28,13 +29,12 @@ namespace MainGame
         private float myCollisionRadius = 0.1f, targetCollisionRadius = 0.5f;
 
         [SerializeField]
-        private NavMeshAgent pathFinder;
-
-        [SerializeField]
-        private Renderer meshRenderer;
+        private GameObject deathEffect;
 
         public enum State { Idle, Chasing, Attacking };
         private State currentState;
+        private NavMeshAgent pathFinder;
+        private Renderer meshRenderer;
         private LivingObject livingTarget;
         private Transform target;
         private Color originalColour;
@@ -48,13 +48,17 @@ namespace MainGame
         {
             base.Start();
 
+            meshRenderer = gameObject.GetComponent<MeshRenderer>();
+            pathFinder = gameObject.GetComponent<NavMeshAgent>();
+            pathFinder.speed = moveSpeed;
+
             currentState = State.Chasing;   
 
-            skinMaterial = meshRenderer.material;
-            originalColour = skinMaterial.color;
+            // skinMaterial = meshRenderer.material;
+            // originalColour = skinMaterial.color;
 
             /// Find player
-            GameObject targetObj = GameObject.FindGameObjectWithTag(playerTag);
+            GameObject targetObj = GameObject.FindGameObjectWithTag(targetTag);
             if (targetObj != null)
             {
                 hasTarget = true;
@@ -72,7 +76,7 @@ namespace MainGame
             }
             else
             {
-                Debug.LogWarning("Can't find any game object with tag: " + playerTag);
+                Debug.LogWarning("Can't find any game object with tag: " + targetTag);
             }
         }
 
@@ -102,7 +106,7 @@ namespace MainGame
 
             float percent = 0;
 
-            skinMaterial.color = Color.red;
+            // skinMaterial.color = Color.red;
             bool hasAppliedDamage = false;
 
             while (percent <= 1)
@@ -122,7 +126,7 @@ namespace MainGame
                 yield return null;
             }
 
-            skinMaterial.color = originalColour;
+            // skinMaterial.color = originalColour;
             currentState = State.Chasing;
             pathFinder.enabled = true;
         }
@@ -147,7 +151,6 @@ namespace MainGame
 
         protected override void Die()
         {
-
             base.Die();
         }
 
@@ -159,7 +162,7 @@ namespace MainGame
 
         public override void OnBeingAttacked(int damage, Vector3 hitPoint = default(Vector3), Vector3 hitDirection = default(Vector3))
         {
-            if(damage > currentHealth)
+            if (damage >= currentHealth) // Enemy will die after this.
             {
                 Instantiate(deathEffect, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection));
             }

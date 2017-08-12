@@ -26,7 +26,7 @@ namespace MainGame
 
         public void FixedUpdate()
         {
-            myRigidbody.MovePosition(myRigidbody.position + velocity * Time.fixedDeltaTime);
+            myRigidbody.MovePosition(myRigidbody.position + velocity * Time.deltaTime);
         }
     }
 }

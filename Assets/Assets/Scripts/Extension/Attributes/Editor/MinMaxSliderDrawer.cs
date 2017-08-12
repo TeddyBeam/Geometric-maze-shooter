@@ -21,9 +21,9 @@ namespace Extension.Attributes
                 EditorGUI.BeginChangeCheck();          
                     
                 EditorGUI.MinMaxSlider(position, ref min, ref max, attr.min, attr.max);
-                EditorGUILayout.LabelField(property.displayName);
-                EditorGUILayout.LabelField("Min Value:", min.ToString("n2"));
-                EditorGUILayout.LabelField("Max Value:", max.ToString("n2"));
+                EditorGUILayout.LabelField(property.displayName + " random range:");
+                EditorGUILayout.LabelField("Min: ", min.ToString("n2"));
+                EditorGUILayout.LabelField("Max: ", max.ToString("n2"));
 
                 if (EditorGUI.EndChangeCheck())
                 {

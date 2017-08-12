@@ -5,25 +5,16 @@ using Extension.ExtraTypes;
 using Extension.Attributes;
 using BaseSystems.Utilities;
 
-namespace MainGame
+namespace MainGame.Maps
 {
     public class MapGenerator : MonoBehaviour
     {
         #region Init
         [SerializeField]
-        private Transform tilePrefab, obstaclePrefab;
-
-        [SerializeField]
-        private BoxCollider groundCollider;
+        private Transform tilePrefab, mapFloor, player;
 
         [SerializeField]
         private NavMeshSurface navigationGround;
-
-        [SerializeField, Positive]
-        private float tileSize = 1f;
-
-        [SerializeField]
-        private bool setObstacleColor = false;
 
         [SerializeField, Reorderable, Space(10)]
         private MapList maps;
@@ -43,11 +34,6 @@ namespace MainGame
         {
             GenerateMap();
         }
-
-        public void OnDrawGizmos()
-        {
-            Gizmos.DrawWireCube(Vector3.zero, new Vector3(navigationGround.transform.localScale.x, 5f, navigationGround.transform.localScale.y));
-        }
         #endregion
 
         #region Generate map
@@ -57,8 +43,18 @@ namespace MainGame
             /// Set the current map index
             if (currentMapIndex < maps.Length)
             {
+                // Disable the player before bake the navigation map.
+                if (player.gameObject.activeSelf)
+                    player.gameObject.SetActive(false);
+
                 currentMap = maps[currentMapIndex];
                 GenerateMap(currentMap.mapSize);
+
+                // Spawn the player at the map centre after the navigation map is baked, prevent error when baking.
+                Vector3 mapCentreWorldPosition = CoordToWorldPosition(currentMap.mapSize, currentMap.mapCentre.x, currentMap.mapCentre.y);
+                Vector3 playerSpawnPosition = new Vector3(mapCentreWorldPosition.x, player.position.y, mapCentreWorldPosition.z);
+                player.position = playerSpawnPosition;
+                player.gameObject.SetActive(true);
             }
             else
             {
@@ -81,9 +77,6 @@ namespace MainGame
             mapHolder.parent = transform;
 #endif
             #endregion
-
-            /// Scale the ground collider size
-            groundCollider.size = new Vector3(currentMap.mapSize.x * tileSize, 0.5f, currentMap.mapSize.y * tileSize);
             
             /// Generate tiles's coordinate.
             allTilesCoord = new List<IntVector2>();
@@ -104,10 +97,12 @@ namespace MainGame
             {
                 for (int j = 0; j < mapSize.y; j++)
                 {
-                    Vector3 tilePosition = CoordToMapPosition(mapSize, i, j);
+                    Vector3 tilePosition = CoordToWorldPosition(mapSize, i, j);
+
                     Transform newTile = Instantiate(tilePrefab, tilePosition, Quaternion.Euler(Vector3.right * 90f));
+                    newTile.localScale = Vector3.one * (1 - currentMap.outlinePercent) * currentMap.tileSize;
+
                     tilesMap[i, j] = newTile; // Save the tile's transform for later use.
-                    newTile.localScale = Vector3.one * (1 - currentMap.outlinePercent) * tileSize;
 
                     #region Debug (Reactive generate)
 #if UNITY_EDITOR
@@ -133,15 +128,21 @@ namespace MainGame
                 if (randomCoord != currentMap.mapCentre  && IsMapFullyAccessible(obstacleMap, currentObstacleCount))
                 {
                     float randomHeight = Random.Range(currentMap.obstacleHeightRange.x, currentMap.obstacleHeightRange.y);
-                    Vector3 obstacleSize = new Vector3((1 - currentMap.outlinePercent) * tileSize, randomHeight, (1 - currentMap.outlinePercent) * tileSize);
+
+                    Vector3 obstacleSize = new Vector3((1 - currentMap.outlinePercent) * currentMap.tileSize, randomHeight, (1 -            currentMap.outlinePercent) * currentMap.tileSize);
+
                     // Random a position and make sure the obstacle is always on the ground.
-                    Vector3 obstaclePosition = CoordToMapPosition(mapSize, randomCoord.x, randomCoord.y) + Vector3.up * obstacleSize.y * 0.5f;
-                    Transform newObstacle = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity);
+                    Vector3 obstaclePosition = CoordToWorldPosition(mapSize, randomCoord.x, randomCoord.y) + Vector3.up * obstacleSize.y * 0.5f;
+
+                    // Choose a random obstacle and spawn it at the open tile's coordinate.
+                    Transform newObstacle = Instantiate
+                        (currentMap.obstaclePrefabs[Random.Range(0, currentMap.obstaclePrefabs.Length)], obstaclePosition, Quaternion.identity);
+
                     newObstacle.localScale = obstacleSize;
                     allOpenCoords.Remove(randomCoord);
 
                     /// Set obstacle's color
-                    if (setObstacleColor)
+                    if (currentMap.setObstacleColor)
                     {
                         Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
                         Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
@@ -165,8 +166,11 @@ namespace MainGame
             openTilesCoord = new Queue<IntVector2>(new MathUtilities().ShuffeList(allTilesCoord, currentMap.shuffeSeed));
 
             /// Scale the navigation surface size and bake the navigation.
-            navigationGround.transform.localScale = new Vector3(mapSize.x, mapSize.y) * tileSize;
+            navigationGround.transform.localScale = new Vector3(mapSize.x, mapSize.y) * currentMap.tileSize;
             navigationGround.BuildNavMesh();
+
+            /// Scale the ground collider size
+            mapFloor.localScale = new Vector3(mapSize.x * currentMap.tileSize, mapSize.y * currentMap.tileSize) ;
 
             Debug.Log("Map generated successfully.");
         }
@@ -190,8 +194,8 @@ namespace MainGame
 
         public Transform GetTileFromPosition(Vector3 position)
         {
-            int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
-            int y = Mathf.RoundToInt(position.z / tileSize + (currentMap.mapSize.x - 1) / 2f);
+            int x = Mathf.RoundToInt(position.x / currentMap.tileSize + (currentMap.mapSize.x - 1) / 2f);
+            int y = Mathf.RoundToInt(position.z / currentMap.tileSize + (currentMap.mapSize.x - 1) / 2f);
 
             /// Make sure x & y are contained within the tiles map.
             x = Mathf.Clamp(x, 0, tilesMap.GetLength(0) - 1);
@@ -207,9 +211,9 @@ namespace MainGame
             return randomCoord;
         }
 
-        private Vector3 CoordToMapPosition(IntVector2 mapSize, int xCoordinate, int yCoordinate)
+        private Vector3 CoordToWorldPosition(IntVector2 mapSize, int xCoordinate, int yCoordinate)
         {
-            return new Vector3(-mapSize.x / 2f + 0.5f + xCoordinate, 0f, -mapSize.y / 2f + 0.5f + yCoordinate) * tileSize;
+            return new Vector3(-mapSize.x / 2f + 0.5f + xCoordinate, 0f, -mapSize.y / 2f + 0.5f + yCoordinate) * currentMap.tileSize;
         }
 
         private bool IsMapFullyAccessible(bool[,] obstacleMap, int currentObstacleCount)

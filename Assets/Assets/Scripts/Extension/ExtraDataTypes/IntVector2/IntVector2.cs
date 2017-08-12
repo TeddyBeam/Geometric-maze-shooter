@@ -3,16 +3,10 @@
 namespace Extension.ExtraTypes
 {
     [Serializable]
-    public class IntVector2
+    public struct IntVector2
     {
         public int x;
         public int y;
-
-        public IntVector2()
-        {
-            x = 1;
-            y = 1;
-        }
 
         public IntVector2(int xCoordinate, int yCoordinate)
         {
@@ -28,7 +22,7 @@ namespace Extension.ExtraTypes
             }
             else if(obj is IntVector2)
             {
-                IntVector2 target = obj as IntVector2;
+                IntVector2 target = (IntVector2)obj;
                 return this.x == target.x && this.y == target.y;
             }
             else

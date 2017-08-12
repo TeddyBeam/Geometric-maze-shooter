@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using BaseSystems.PhysicLogic;
+using Extension.Attributes;
 using System;
 
 namespace MainGame
 {
     public class LivingObject : MonoBehaviour, IAttackable<int>
     {
-        [SerializeField, Range(1, 100)]
-        private int startingHealth = 10;
+        [SerializeField, Positive]
+        protected int startingHealth = 10;
 
+        [SerializeField, ReadOnly]
         protected int currentHealth = 0;
+
         protected bool isDead = false;
 
         public event Action OnDeath;

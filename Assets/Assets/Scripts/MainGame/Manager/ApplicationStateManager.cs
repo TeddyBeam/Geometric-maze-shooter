@@ -13,11 +13,11 @@ namespace MainGame.Managers
         {
             if (!focus)
             {
-                Pause();
+                PauseGame();
             }
             else
             {
-                Continue();
+                ContinueGame();
             }
         }
 
@@ -25,21 +25,21 @@ namespace MainGame.Managers
         {
             if (pause)
             {
-                Pause();
+                PauseGame();
             }
             else
             {
-                Continue();
+                ContinueGame();
             }
         }
 
-        public void Pause()
+        public void PauseGame()
         {
             pausePanel.SetActive(true);
             Time.timeScale = 0.0f;
         }
 
-        public void Continue()
+        public void ContinueGame()
         {
             pausePanel.SetActive(false);
             Time.timeScale = 1.0f;

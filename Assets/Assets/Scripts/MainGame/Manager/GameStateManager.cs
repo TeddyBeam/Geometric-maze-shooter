@@ -12,6 +12,7 @@ namespace MainGame.Managers
         private GameObject gameOverPanel;
 
         private Action<object> OnGameOverHandler;
+        private bool isQuitting = false;
 
         protected virtual void Start()
         {
@@ -19,9 +20,15 @@ namespace MainGame.Managers
             this.RegisterListener(ObserverEventID.OnGameOver, OnGameOverHandler);
         }
 
+        protected virtual void OnApplicationQuit()
+        {
+            isQuitting = true;
+        }
+
         protected virtual void OnDestroy()
         {
-            this.RemoveListener(ObserverEventID.OnGameOver, OnGameOverHandler);
+            if(!isQuitting)
+                this.RemoveListener(ObserverEventID.OnGameOver, OnGameOverHandler);
         }
 
         private void OnGameOverHandle()
