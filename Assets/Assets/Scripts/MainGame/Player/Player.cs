@@ -40,7 +40,7 @@ namespace MainGame
             /// Set up the health UI.
             healthBar.maxValue = startingHealth;
             healthBar.value = startingHealth;
-            healthDisplay.text = "Health: " + healthBar.value;
+            healthDisplay.text = healthBar.value.ToString();
         }
 
         protected virtual void Update()
@@ -69,7 +69,7 @@ namespace MainGame
         public override void OnBeingAttacked(int damage, Vector3 hitPoint = default(Vector3), Vector3 hitDirection = default(Vector3))
         {
             healthBar.value -= damage;
-            healthDisplay.text = "Health: " + healthBar.value;
+            healthDisplay.text = healthBar.value.ToString();
             base.OnBeingAttacked(damage, hitPoint, hitDirection);
         }
 

@@ -5,10 +5,7 @@ namespace BaseSystems.DesignPatterns.Singleton
 {
     public class Singleton<T> : MonoBehaviour where T : Singleton<T>
     {
-        /// <summary>
-        /// Is this DontDestroyOnload ?
-        /// </summary>
-        [Comment("Make this DontDestroyOnLoad?"), SerializeField]
+        [Comment("Make this gameobject DontDestroyOnLoad?"), SerializeField]
         private bool isPersistant = false;
 
         private static volatile T instance;
