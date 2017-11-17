@@ -33,7 +33,7 @@ namespace MainGame.Maps
         [Reorderable]
         public TransformList obstaclePrefabs;
 
-        public IntVector2 mapCentre
+        public IntVector2 MapCentre
         {
             get
             {

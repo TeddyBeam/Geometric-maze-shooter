@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using BaseSystems.Singleton;
+using BaseSystems.DesignPatterns.Singleton;
 
 namespace MainGame.Managers
 {

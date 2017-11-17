@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using BaseSystems.Observer;
+using BaseSystems.DesignPatterns.Observer;
 using MainGame.Guns;
 
 namespace MainGame
@@ -75,7 +75,7 @@ namespace MainGame
 
         protected override void Die()
         {
-            this.PostEvent(ObserverEventID.OnGameOver);
+            SingletonEventDispatcher.Instance.PostEvent(EventsID.OnGameOver);
             base.Die();
         }
     }

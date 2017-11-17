@@ -2,7 +2,7 @@
 using UnityEngine;
 using Extension.ExtraTypes;
 using Extension.Attributes;
-using BaseSystems.Observer;
+using BaseSystems.DesignPatterns.Observer;
 using MainGame.Maps;
 
 namespace MainGame
@@ -29,7 +29,7 @@ namespace MainGame
         {
             // Listen to OnPlayerCampingDetected from CampingPunisher.
             OnPlayerCampingDetectedHandler = (playerPosition) => OnPlayerCampingDetected((Vector3)playerPosition);
-            this.RegisterListener(ObserverEventID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
+            SingletonEventDispatcher.Instance.RegisterListener(EventsID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
 
             NextWave();
             StartCoroutine(NormalSpawn());
@@ -43,7 +43,7 @@ namespace MainGame
         protected virtual void OnDestroy()
         {
             if(!isQuitting)
-                this.RemoveListener(ObserverEventID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
+                SingletonEventDispatcher.Instance.RemoveListener(EventsID.OnPlayerCampingDetected, OnPlayerCampingDetectedHandler);
         }
 
         private IEnumerator NormalSpawn()

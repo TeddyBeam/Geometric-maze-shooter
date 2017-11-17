@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using BaseSystems.Observer;
+using BaseSystems.DesignPatterns.Observer;
 
 namespace MainGame
 {
     /// <summary>
-    /// Detect if player is  camping in one place.
+    /// Detect if player is camping in one place.
     /// </summary>
     public class CampingPunisher : MonoBehaviour
     {
@@ -40,7 +40,7 @@ namespace MainGame
             {
                 if (Vector3.Distance(playerTransform.position, playerOldPosition) < campThresholdDistance)
                 {
-                    this.PostEvent(ObserverEventID.OnPlayerCampingDetected, playerTransform.position);
+                    SingletonEventDispatcher.Instance.PostEvent(EventsID.OnPlayerCampingDetected, playerTransform.position);
                 }
                 playerOldPosition = playerTransform.position;
                 yield return new WaitForSeconds(campingCheckRate);

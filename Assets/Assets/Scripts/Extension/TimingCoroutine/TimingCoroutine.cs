@@ -9,17 +9,6 @@ namespace Extension
 {
     namespace Timing
     {
-        public enum CoroutineMode
-        {
-            UnityNormalCoroutine,
-            TimingCoroutine
-        }
-
-        /// <summary>
-        /// Another coroutine mode.
-        /// This script is not mine its from the asset store.
-        /// Please dont change anything I havent fully understand how it work yet.
-        /// </summary>
         public class TimingCoroutine : MonoBehaviour
         {
             #region Init
@@ -186,7 +175,7 @@ namespace Extension
             #endregion
 
             #region Monobehaviours
-            void Awake()
+            protected virtual void Awake()
             {
                 if (instance == null)
                     instance = this;
@@ -209,7 +198,7 @@ namespace Extension
                     MainThread = Thread.CurrentThread;
             }
 
-            void OnDestroy()
+            protected virtual void OnDestroy()
             {
                 if (instance == this)
                     instance = null;
@@ -217,7 +206,7 @@ namespace Extension
                 ActiveInstances.Remove(instanceID);
             }
 
-            void Update()
+            protected virtual void Update()
             {
                 if (OnPreExecute != null)
                     OnPreExecute();
@@ -352,7 +341,7 @@ namespace Extension
                     throw _exceptions.Dequeue();
             }
 
-            void FixedUpdate()
+            protected virtual void FixedUpdate()
             {
                 if (OnPreExecute != null)
                     OnPreExecute();
@@ -418,7 +407,7 @@ namespace Extension
                     throw _exceptions.Dequeue();
             }
 
-            void LateUpdate()
+            protected virtual void LateUpdate()
             {
                 if (OnPreExecute != null)
                     OnPreExecute();
@@ -1745,7 +1734,8 @@ namespace Extension
 
             private IEnumerator<float> _StartWhenDone(CoroutineHandle handle, IEnumerator<float> proc)
             {
-                if (!waitingTriggers.ContainsKey(handle)) yield break;
+                if (!waitingTriggers.ContainsKey(handle))
+                    yield break;
 
                 try
                 {
@@ -2236,6 +2226,8 @@ namespace Extension
                 }
             }
 
+            #region Obsolete
+
             [Obsolete("Unity coroutine function, use RunCoroutine instead.", true)]
             public new Coroutine StartCoroutine(System.Collections.IEnumerator routine) { return null; }
 
@@ -2292,8 +2284,13 @@ namespace Extension
 
             [Obsolete("Just.. no.", true)]
             public new static void print(object message) { }
+
+            #endregion
         }
 
+        #endregion
+
+        #region Segment enum
         public enum Segment
         {
             Invalid = -1,
@@ -2302,7 +2299,9 @@ namespace Extension
             LateUpdate,
             SlowUpdate,
         }
+        #endregion
 
+        #region MEC handle
         /// <summary>
         /// A handle for a MEC coroutine.
         /// </summary>
@@ -2359,7 +2358,9 @@ namespace Extension
                 get { return Key != 0; }
             }
             #endregion
+
         }
+
         #region Extension Methods
         public static class ExtensionMethods
         {

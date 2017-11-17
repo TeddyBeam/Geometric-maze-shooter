@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using BaseSystems.Observer;
+using BaseSystems.DesignPatterns.Observer;
 using System;
 
 namespace MainGame.Managers
@@ -17,7 +17,7 @@ namespace MainGame.Managers
         protected virtual void Start()
         {
             OnGameOverHandler = _ => OnGameOverHandle();
-            this.RegisterListener(ObserverEventID.OnGameOver, OnGameOverHandler);
+            SingletonEventDispatcher.Instance.RegisterListener(EventsID.OnGameOver, OnGameOverHandler);
         }
 
         protected virtual void OnApplicationQuit()
@@ -28,7 +28,7 @@ namespace MainGame.Managers
         protected virtual void OnDestroy()
         {
             if(!isQuitting)
-                this.RemoveListener(ObserverEventID.OnGameOver, OnGameOverHandler);
+                SingletonEventDispatcher.Instance.RemoveListener(EventsID.OnGameOver, OnGameOverHandler);
         }
 
         private void OnGameOverHandle()

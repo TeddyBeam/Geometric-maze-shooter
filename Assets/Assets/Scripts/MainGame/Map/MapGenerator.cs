@@ -51,7 +51,7 @@ namespace MainGame.Maps
                 GenerateMap(currentMap.mapSize);
 
                 // Spawn the player at the map centre after the navigation map is baked, prevent error when baking.
-                Vector3 mapCentreWorldPosition = CoordToWorldPosition(currentMap.mapSize, currentMap.mapCentre.x, currentMap.mapCentre.y);
+                Vector3 mapCentreWorldPosition = CoordToWorldPosition(currentMap.mapSize, currentMap.MapCentre.x, currentMap.MapCentre.y);
                 Vector3 playerSpawnPosition = new Vector3(mapCentreWorldPosition.x, player.position.y, mapCentreWorldPosition.z);
                 player.position = playerSpawnPosition;
                 player.gameObject.SetActive(true);
@@ -125,7 +125,7 @@ namespace MainGame.Maps
                 obstacleMap[randomCoord.x, randomCoord.y] = true;
                 currentObstacleCount++;
 
-                if (randomCoord != currentMap.mapCentre  && IsMapFullyAccessible(obstacleMap, currentObstacleCount))
+                if (randomCoord != currentMap.MapCentre  && IsMapFullyAccessible(obstacleMap, currentObstacleCount))
                 {
                     float randomHeight = Random.Range(currentMap.obstacleHeightRange.x, currentMap.obstacleHeightRange.y);
 
@@ -220,8 +220,8 @@ namespace MainGame.Maps
         {
             bool[,] mapFlags = new bool[obstacleMap.GetLength(0), obstacleMap.GetLength(1)];
             Queue<IntVector2> queue = new Queue<IntVector2>();
-            queue.Enqueue(currentMap.mapCentre);
-            mapFlags[currentMap.mapCentre.x, currentMap.mapCentre.y] = true;
+            queue.Enqueue(currentMap.MapCentre);
+            mapFlags[currentMap.MapCentre.x, currentMap.MapCentre.y] = true;
 
             int accessibleTileCount = 1;
 

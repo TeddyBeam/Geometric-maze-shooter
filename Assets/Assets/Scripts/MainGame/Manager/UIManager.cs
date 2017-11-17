@@ -12,7 +12,6 @@ namespace MainGame.Managers
 
         protected virtual void Start()
         {
-
             /// Add sliders' callback events.
             masterVolumeSlider.onValueChanged.AddListener(_ => AudioManager.Instance.MasterVolunePercent = masterVolumeSlider.value);
             sfxVolumeSlider.onValueChanged.AddListener(_ => AudioManager.Instance.SfxVolumePercent = sfxVolumeSlider.value);
